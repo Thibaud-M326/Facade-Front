@@ -1,17 +1,22 @@
 <template>
-    <p>
+    <!-- <p>
         {{ products }}
-    </p>
+        {{ gender }}
+    </p> -->
     <div id="images-container">
-        <div 
-            v-for="product of products.products.data" 
+            <div 
             id="images-loop"
-        >
-            <img 
-                :src="getImagePath(product.type, product.name)" 
-                alt="Image loading error"
-            />
-        </div>
+            v-for="product of products?.products.data" 
+            >
+                <RouterLink 
+                :to="{ name: 'product', params: { productId: product.id } }"
+                >
+                    <img 
+                    :src="getImagePath(gender!, product.type, product.name)" 
+                    alt="Image loading error"
+                    />
+                </RouterLink>
+            </div>
     </div>
 </template>
 
@@ -19,12 +24,13 @@
 export default {
     props: {
         products: Object,
+        gender: String,
     },
     methods: {
-        getImagePath(type: string, name: string) {
-            return `src/assets/Images/men/${type}/${name}`;
+        getImagePath(gender: String, type: string, name: string) {
+            return `src/assets/Images/${gender}/${type}/${name}`;
         }
-    }
+    },
 }
 </script>
 

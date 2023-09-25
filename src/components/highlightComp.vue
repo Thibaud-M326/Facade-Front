@@ -1,12 +1,13 @@
 <template>
-    <p>
+    <!-- <p>
         {{ products }}
-    </p>
-    <div v-for="product of products.products.data">
+        {{ gender }}
+    </p> -->
+    <div v-for="product of products?.products.data">
         <div v-if="product.is_highlighted">
             <img
                 id="menHighlight"
-                :src="getImagePath(product.type, product.name)" 
+                :src="getImagePath(gender!, product.type, product.name)" 
                 alt="Highlight"
             />
         </div>
@@ -17,10 +18,11 @@
 export default {
     props: {
         products: Object,
+        gender: String,
     },
     methods: {
-        getImagePath(type: string, name: string) {
-            return `src/assets/Images/men/${type}/${name}`;
+        getImagePath(gender: String, type: string, name: string) {
+            return `src/assets/Images/${gender}/${type}/${name}`;
         }
     }
 }

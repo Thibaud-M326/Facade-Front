@@ -9,10 +9,9 @@
 </template>
 
 <script lang="ts">
-
-import { computed, mergeProps, ref } from 'vue'
-import gql from 'graphql-tag'
+import { computed, ref } from 'vue'
 import { useQuery } from '@vue/apollo-composable'
+import gql from 'graphql-tag'
 
 export default {
     props: {

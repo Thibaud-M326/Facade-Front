@@ -49,5 +49,6 @@ a {
 #facadeTitle{
   font-size: 1rem;
   font-weight: bold;
+  padding-right: 20px;
 }
 </style>
