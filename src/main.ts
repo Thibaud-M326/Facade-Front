@@ -6,9 +6,21 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 
+// Apollo
 import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client/core'
 import { DefaultApolloClient } from '@vue/apollo-composable'
 import { setContext } from '@apollo/client/link/context'
+
+// Vuetify
+import 'vuetify/styles'
+import { createVuetify } from 'vuetify'
+import * as components from 'vuetify/components'
+import * as directives from 'vuetify/directives'
+
+const vuetify = createVuetify({
+    components,
+    directives,
+})
 
 // HTTP connection to the API
 const httpLink = createHttpLink({
@@ -46,5 +58,6 @@ const app = createApp({
 
 app.use(createPinia())
 app.use(router)
+app.use(vuetify)
 
 app.mount('#app')

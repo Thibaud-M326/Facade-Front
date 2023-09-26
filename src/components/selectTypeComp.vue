@@ -74,5 +74,7 @@ button {
     color: black; 
     border: 2px solid white;
     font-size: 1rem;
+    margin-right: 10px;
+    margin-left: 10px;
 }
 </style>
