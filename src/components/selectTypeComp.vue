@@ -9,10 +9,9 @@
 </template>
 
 <script lang="ts">
-
-import { computed, mergeProps, ref } from 'vue'
-import gql from 'graphql-tag'
+import { computed, ref } from 'vue'
 import { useQuery } from '@vue/apollo-composable'
+import gql from 'graphql-tag'
 
 export default {
     props: {
@@ -75,5 +74,7 @@ button {
     color: black; 
     border: 2px solid white;
     font-size: 1rem;
+    margin-right: 10px;
+    margin-left: 10px;
 }
 </style>

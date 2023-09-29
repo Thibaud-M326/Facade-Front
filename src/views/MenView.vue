@@ -8,9 +8,10 @@
     />
     <Highlight
         :products="products" 
+        :gender="gender"
     />
     <Products
-        :products="products"
+        :products="products" 
         :gender="gender"
     />
 </template>
@@ -27,14 +28,6 @@ export default {
         Title,
         Highlight,
         Products,
-    },
-    props: {
-        gender: String,
-    },
-    watch: {
-        products(products) {
-            console.log(products)
-        }
     },
     data() {
         return {
