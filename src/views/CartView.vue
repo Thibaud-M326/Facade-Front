@@ -117,6 +117,7 @@ export default {
                     price: productData.price
                 })
                 //comment
+                //coucou
                 console.log(productResult.data.product.price)
             }
         }
