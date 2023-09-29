@@ -116,7 +116,8 @@ export default {
                 products.value.push({
                     price: productData.price
                 })
-
+                //comment
+                //coucou
                 console.log(productResult.data.product.price)
             }
         }
