@@ -3,7 +3,7 @@
     <button
     v-if="apolloToken"
     >
-        My account
+    <RouterLink to="/userAccount">Account</RouterLink>
     </button>
 
     <v-btn 
@@ -20,7 +20,7 @@
                             Doesn't have an account yet?
                         </p>
                         <p>
-                            <RouterLink to="/connect" id="connectRouter">Connect</RouterLink>
+                            <RouterLink to="/createAccount">Connect</RouterLink>
                         </p>
                         <p>
                             {{ apolloToken }}
@@ -116,4 +116,13 @@ export default {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+
+a {
+	font-size: 1rem;
+	padding-right: 20px;
+	text-decoration: none;
+	color: black;
+}
+
+</style>

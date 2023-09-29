@@ -14,7 +14,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 #titleDiv {
     height: 10vw;
     display: flex;

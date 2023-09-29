@@ -23,9 +23,14 @@ const router = createRouter({
       component: () => import('../views/WomenView.vue')
     },
     {
-      path: '/connect',
-      name: 'connect',
-      component: () => import('../views/ConnectView.vue')
+      path: '/createAccount',
+      name: 'createAccount',
+      component: () => import('../views/CreateAccountView.vue')
+    },
+    {
+      path: '/userAccount',
+      name: 'userAccount',
+      component: () => import('../views/UserAccountView.vue')
     },
     {
       path: '/cart',

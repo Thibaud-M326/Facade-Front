@@ -34,7 +34,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 #images-container {
     display: flex;
     flex-wrap: wrap;
