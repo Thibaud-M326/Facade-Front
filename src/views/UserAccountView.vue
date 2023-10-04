@@ -73,7 +73,7 @@ export default {
 #infoDiv {
     border: 1px solid black;
     border-top: none;
-    height: 95vh;
+    height: 94vh;
     width: 60vw;
 }
 

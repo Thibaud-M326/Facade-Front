@@ -9,26 +9,60 @@
             <!-- <p>
                 {{ userCarts }}
             </p> -->
-            <p v-for="product in products">
+            <!-- <p v-for="product in products">
                 {{ product.price }}
-            </p>
-            <div id="productDivs">
+            </p> -->
+            <!-- <p>
+                {{ quantityButton[0].plus }}
+            </p> -->
+            <!-- <p>
+                {{ products }}
+            </p> -->
+            <div
+            v-for="product in products"
+            id="productDivs">
                 <div id="productPicture">
-                    <img id="productImageImg" src="../assets/Images/men/tshirt/Balcaca.jpeg" alt="">
+                    <img 
+                    id="productImageImg" 
+                    :src="getImagePath(product.gender, product.type, product.name)" 
+                    alt="">
                 </div>
-                <div id="productDescriptionDiv">
-                    <p class="productDescriptionP">
-                        TSHIRT BALCACA
+                <div 
+                id="productDescriptionDiv">
+                    <p 
+                    class="productDescriptionP"
+                    style="font-weight: bold"
+                    >
+                        {{ product.name.split('.')[0].toUpperCase() }} 
                     </p>
                     <p class="productDescriptionP">
-                        999.00€
+                        {{ product.price * product.quantity }}€
                     </p>
                     <p class="productDescriptionP">
-                        quantity:  + 1 -
+                        <button 
+                        class="plusOrMinusButton"
+                        @click="adjustQuantity(quantityButton[0].minus, product)"
+                        >
+                            -
+                        </button>
+                        {{ product.quantity }}
+                        <button
+                        class="plusOrMinusButton"
+                        @click="adjustQuantity(quantityButton[0].plus, product)"
+                        >
+                            +
+                        </button>
                     </p>
                 </div>
-            </div>      
-
+                <div id="removeProductDiv">
+                    <button 
+                    id="removeButton"
+                    @click="removeProductFromCart(product)"
+                    >
+                        x
+                    </button>
+                </div>
+            </div>
 
             <div id="totalCountDiv" >
                 <div id="shippingCostDiv">
@@ -44,13 +78,13 @@
                         Total 
                     </p>
                     <p class="shippingP">
-                        2099.00€
+                        {{ totalPrice }}€
                     </p>
                 </div>
             </div>
             <div id="toPayPageDiv"> 
                 <button id="continueAndPayButton">
-                    Continue and Pay (1)
+                    Continue and Pay ({{ productsToBuy }})
                 </button>
             </div>
         </div>
@@ -59,7 +93,7 @@
 
 <script lang="ts">
 import { computed, ref, watch } from 'vue'
-import { provideApolloClient, useQuery } from '@vue/apollo-composable'
+import { provideApolloClient, useMutation, useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client/core'
 import { DefaultApolloClient } from '@vue/apollo-composable'
@@ -68,15 +102,32 @@ export default {
     setup() {
         const products = ref([
             {
-                price: ''
+                id: '',
+                cartId: 0,
+                price: '',
+                name: '',
+                quantity: '',
+                gender: '',
+                type: '',
             }
         ])
+
+        const quantityButton = ref([
+            {
+                plus: "plus",
+                minus: "minus"
+            }
+        ])
+
+        const totalPrice = ref(0)
+        const productsToBuy = ref(0)
 
         const { result } = useQuery(
         gql`
             query me {
                 me {
                     carts {
+                        id
                         product_id
                         quantity
                     }                           
@@ -87,44 +138,117 @@ export default {
         const userCarts = computed(() => result?.value?.me?.carts ?? [])
 
         watch(userCarts, performActionForCarts)
+        watch(products.value, countTotalPrice)
+        watch(products.value, countProductsToBuy)
 
         async function performActionForCarts() {
             for (const cart of userCarts.value) {
 
-                const apollo = new ApolloClient({
-                    link: createHttpLink({
-                        uri: 'http://localhost:8000/graphql',
-                    }),
-                    cache: new InMemoryCache(),
-                })
+                const existingProduct = products.value.find((product) => product.id === cart.product_id);
 
-                const productResult = await apollo.query({
-                    query: gql`
-                        query Product ($id: ID!) {
-                            product(id: $id) {
-                                price
+                if (!existingProduct) {
+                    const apollo = new ApolloClient({
+                        link: createHttpLink({
+                            uri: 'http://localhost:8000/graphql',
+                        }),
+                        cache: new InMemoryCache(),
+                    })
+
+                    const productResult = await apollo.query({
+                        query: gql`
+                            query Product ($id: ID!) {
+                                product(id: $id) {
+                                    id
+                                    price
+                                    name
+                                    gender
+                                    type
+                                }
                             }
+                        `,
+                        variables: {
+                            id: cart.product_id
                         }
-                    `,
-                    variables: {
-                        id: cart.product_id
-                    }
-                })
+                    })
+                    
+                    const productData = productResult.data.product
+                    
+                    products.value.push({
+                        id: productData.id,
+                        cartId: cart.id,
+                        price: productData.price,
+                        name: productData.name,
+                        quantity: cart.quantity,
+                        gender: productData.gender,
+                        type: productData.type,
+                    })
 
-                const productData = productResult.data.product
-                
-                products.value.push({
-                    price: productData.price
-                })
-                //comment
-                //coucou
-                console.log(productResult.data.product.price)
+                    if (products.value[0].price == '') {
+                        products.value.shift()
+                    }
+                }
             }
         }
 
+        function getImagePath(gender: String, type: string, name: string) {
+            return `src/assets/Images/${gender}/${type}/${name}`;
+        }
+
+        function adjustQuantity(plusOrMinus: String, product: Product) {
+
+            if (plusOrMinus == 'plus') {
+                product.quantity++
+            } else if (product.quantity > 1) {
+                product.quantity--
+            }
+
+            updateCartProductQuantityMutation({
+                input: {
+                    id: product.cartId,
+                    quantity: product.quantity,
+                },
+            })
+        }
+
+        const { mutate: updateCartProductQuantityMutation } = useMutation(gql`
+            mutation updateCartProductQuantity ($input: updateCartProductQuantityInput!) {
+                updateCartProductQuantity(input: $input) {
+                    id
+                    quantity
+                }
+            }
+        `
+        )
+
+        function countTotalPrice() {
+            totalPrice.value = 0
+            for(const product of products.value) {
+                totalPrice.value += product.price * product.quantity
+                console.log(totalPrice.value)
+            }
+        }
+
+        function countProductsToBuy() {
+            productsToBuy.value = 0
+            for(const product of products.value) {
+                productsToBuy.value += parseInt(product.quantity)
+            }
+        }
+
+        function removeProductFromCart() {
+            
+        }
+
         return {
-            userCarts,
             products,
+            quantityButton,
+            userCarts,
+            getImagePath,
+            adjustQuantity,
+            updateCartProductQuantityMutation,
+            totalPrice,
+            countProductsToBuy,
+            productsToBuy,
         }
     }
 }
@@ -160,7 +284,9 @@ export default {
 
 #productImageImg {
     width: 25vw;
-    height: 25vh;
+    height: 25vw;
+    max-height: 300px;
+    max-width: 300px;
 }
 
 #productDescriptionDiv {
@@ -174,6 +300,26 @@ export default {
 .productDescriptionP {
     font-size: small;
     margin-bottom: 1vh;
+}
+
+.plusOrMinusButton {
+    width: 22px;
+    height: 22px;
+    background-color: white;
+    color: black;
+    border: 1px solid black;
+}
+
+#removeProductDiv {
+    width: 5vh;
+    height: 5vh;
+}
+
+#removeButton {
+    width: 5vh;
+    height: 5vh;
+    border-left: 1px solid black;
+    border-bottom: 1px solid black;
 }
 
 #totalCountDiv {

@@ -4,12 +4,15 @@
 			<nav class="topNavbar">
 				<RouterLink to="/new">New</RouterLink>
 				<RouterLink to="/men">Men</RouterLink>
-				<RouterLink to="/women">Woman</RouterLink>
+				<RouterLink to="/women">Women</RouterLink>
 			</nav>
 		</div>
 
 		<h1 id="facadeTitle">
-			<RouterLink to="/new">FACADE</RouterLink>
+			<RouterLink 
+			to="/new"
+			>FACADE
+			</RouterLink>
 		</h1>
 
 		<div>
@@ -33,6 +36,11 @@
 		{{ user }}
 	</p> -->
 
+	<footer>
+		<p>
+			footer
+		</p>
+	</footer>
 
 </template>
 
@@ -90,7 +98,7 @@ a {
 #facadeTitle {
 	font-size: 1rem;
 	font-weight: bold;
-	padding-right: 20px;
+	padding-right: 50px;
 	margin-top: 10px;
 	margin-bottom: 9px;
 }

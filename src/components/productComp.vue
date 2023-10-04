@@ -3,7 +3,8 @@
         {{ products }}
         {{ gender }}
     </p> -->
-    <div id="images-container">
+    <div id="container">
+        <div id="images-container">
             <div 
             id="images-loop"
             v-for="product of products?.products.data" 
@@ -17,6 +18,7 @@
                     />
                 </RouterLink>
             </div>
+        </div>
     </div>
 </template>
 
@@ -35,18 +37,32 @@ export default {
 </script>
 
 <style scoped>
+#container {
+    display: flex;
+    justify-content: center;
+}
+
 #images-container {
     display: flex;
     flex-wrap: wrap;
+    width: 95%;
 }
 
 #images-loop {
-    width: 48.9vw;
+    /* width: 48.9vw; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 30vw;
     border: solid black 1px;
+    margin: 2px;
+    
 }
 
 img {
     height: 50vw;
+    max-height: 480px;
+    max-width: 480px;
     width: 100%;
     object-fit: cover;
     margin: 0;

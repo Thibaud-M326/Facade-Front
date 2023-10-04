@@ -2,6 +2,9 @@
     <!-- <p>
         {{ product.description }}
     </p> -->
+    <!-- <p>
+        {{ product }}
+    </p> -->
     <div id="containerDiv">
         <div id="imgDiv">
             <img 
@@ -12,8 +15,8 @@
         <div id="productDiv">
             <div id="productInfoDiv">
                 <h1 id="descriptionH1">
-                    {{ product.gender.toUpperCase() }}          
-                    {{ product.name.split('.')[0].toUpperCase() }}            
+                    {{ product?.gender?.toUpperCase() }}          
+                    {{ product?.name?.split('.')[0].toUpperCase() }}            
                 </h1>
                 <p>
                     {{ product.price }} €
@@ -22,8 +25,12 @@
                     {{ product.description }}
                 </p>
                 <hr>
-                <button id="addToCartButton">
+                <button 
+                id="addToCartButton"
+                @click="addToCart()"
+                >
                     Add to cart
+                    ({{ existingProduct.quantity }})
                 </button>
             </div>
         </div>
@@ -32,26 +39,34 @@
 
 <script lang="ts">
 import { computed, ref } from 'vue'
-import { useQuery } from '@vue/apollo-composable'
 import { useRoute } from "vue-router";
+import { useQuery, useMutation } from '@vue/apollo-composable'
+import { watch } from 'vue'
 import gql from 'graphql-tag'
 
 export default {
     name: 'ProductView',
     methods: {
         getImagePath(gender: String, type: string, name: string) {
-            console.log(gender)
-            console.log(type)
-            console.log(name)
             return `../src/assets/Images/${gender}/${type}/${name}`;
         }
     },
     setup() {
+        const existingProduct = ref({
+            quantity: 0,
+        })
+        const user = ref({
+            id: ''
+        })
         const route = useRoute()
-
+        if (localStorage.getItem("apollo-token")) {
+            user.value = JSON.parse(localStorage.getItem("user")!)
+        }
         const variables = ref({
             id: route.params.productId,
         })
+        const productCartQuantity = ref(0)
+        const productCartId = ref(0)
 
         const { result } = useQuery(
         gql`
@@ -67,14 +82,98 @@ export default {
                     is_available
                 }
             }
-        `, variables)        
+        `, variables) 
 
-        const product = computed(() => result.value.product ?? [])
+        const product = computed(() => result?.value?.product ?? [])
 
-        // console.log(product.value)
+        const { result: cartsResult, refetch: cartsRefetch } = useQuery(gql`
+            query cartsQuery {
+                carts(first: 10, user_id: 1) {
+                    data {
+                        id
+                        user_id
+                        product_id
+                        quantity
+                    }
+                }
+            }
+        `)
+
+        const userCarts = computed(() => cartsResult?.value?.carts ?? [])
+
+        watch(userCarts, setExistingProduct)
+ 
+        cartsRefetch()
+
+        function addToCart() {
+            const productID = product.value.id;
+            const cartWithProduct = userCarts.value.data.find((cart) => cart.product_id == productID);
+
+            if (cartWithProduct) {
+                console.log("Le produit existe dans le panier. Une quantitée ajouté");
+
+                productCartId.value = parseInt(cartWithProduct.id)
+
+                productCartQuantity.value = cartWithProduct.quantity
+                productCartQuantity.value++
+
+                updateCartProductQuantityMutation({
+                    input: {
+                        id:  productCartId.value,
+                        quantity: productCartQuantity.value,
+                    },
+                })
+                cartsRefetch()
+            } else {
+                console.log("Le produit n'existe pas dans le panier. Un produit ajouté");
+
+                const userId = parseInt(user.value.id)
+                const productId = parseInt(product.value.id)
+
+                addOneProductToCartMutation({
+                    input: {
+                        user_id: userId,
+                        product_id: productId,
+                        quantity: 1,
+                    }
+                })
+                cartsRefetch()
+            }
+        }
+
+        const { mutate: updateCartProductQuantityMutation } = useMutation(gql`
+            mutation updateCartProductQuantity ($input: updateCartProductQuantityInput!) {
+                updateCartProductQuantity(input: $input) {
+                    id
+                    quantity
+                }
+            }
+        `
+        )
+
+        const { mutate: addOneProductToCartMutation } = useMutation(gql`
+            mutation addOneProductToCart ($input: addOneProductToCartInput!) {
+                addOneProductToCart (input: $input) {
+                    id
+                    user_id
+                    product_id
+                    quantity                 
+                }
+            }
+        `
+        )
+
+        function setExistingProduct() {
+            existingProduct.value = userCarts.value.data.find((cart) => cart.product_id == product.value.id);
+        }
 
         return {
+            setExistingProduct,
+            existingProduct,
+            addToCart,
             product,
+            userCarts,
+            user,
         }
     }
 }
@@ -85,6 +184,7 @@ export default {
     display: flex;
     width: 100%;
     height: 94vh;
+    border-bottom: 1px solid black;
 }
 
 #imgDiv {
