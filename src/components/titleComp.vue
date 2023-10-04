@@ -16,7 +16,7 @@ export default {
 
 <style scoped>
 #titleDiv {
-    height: 10vw;
+    height: 8vw;
     display: flex;
     justify-content: center;
     align-items: center;

@@ -30,11 +30,11 @@ export default {
 
 <style scoped>
 #menHighlight {
-    height: 20vw;
-    width: 80vw;
-    margin-bottom: 3vw;
-    margin-left: 10vw;
-    margin-right: 10vw;
+    height: 10vw;
+    width: 60vw;
+    margin-bottom: 2vw;
+    margin-left: 20vw;
+    margin-right: 20vw;
     object-position: center -35vw;
 }
 
