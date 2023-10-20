@@ -98,8 +98,6 @@ export default {
         }))
 
         onDone(result => {
-            // console.log(result.data.login.access_token)
-            // console.log(result.data.login.user)
             localStorage.setItem("apollo-token", result.data.login.access_token)
             localStorage.setItem("user", JSON.stringify(result.data.login.user))
             router.push({ path: "/new" })

@@ -34,25 +34,22 @@
                 id="productDescriptionDiv">
                     <p 
                     class="productDescriptionP"
-                    style="font-weight: bold"
-                    >
+                    style="font-weight: bold">
                         {{ product.name.split('.')[0].toUpperCase() }} 
                     </p>
                     <p class="productDescriptionP">
-                        {{ product.price * product.quantity }}€
+                        {{ parseFloat(product.price) * parseFloat(product.quantity) }}€
                     </p>
                     <p class="productDescriptionP">
                         <button 
                         class="plusOrMinusButton"
-                        @click="adjustQuantity(quantityButton[0].minus, product)"
-                        >
+                        @click="adjustQuantity(quantityButton[0].minus, product)">
                             -
                         </button>
                         {{ product.quantity }}
                         <button
                         class="plusOrMinusButton"
-                        @click="adjustQuantity(quantityButton[0].plus, product)"
-                        >
+                        @click="adjustQuantity(quantityButton[0].plus, product)">
                             +
                         </button>
                     </p>
@@ -60,8 +57,7 @@
                 <div id="removeProductDiv">
                     <button 
                     id="removeButton"
-                    @click="removeProductFromCart(product)"
-                    >
+                    @click="removeProductFromCart(product)">
                         x
                     </button>
                 </div>
@@ -142,60 +138,68 @@ export default {
         const userCarts = computed(() => result?.value?.me?.carts ?? [])
         const userID = computed(() => result?.value?.me)
 
-        watch(userCarts, performActionForCarts)
+        watch(userCarts, getProductsFromUserCarts)
         watch(products.value, countTotalPrice)
         watch(products.value, countProductsToBuy)
 
-        async function performActionForCarts() {
+        async function getProductsFromUserCarts() {
 
-            for (const cart of userCarts.value) {
-                
-                const existingProduct = products.value.find((product) => product.id == cart.product_id);
+        // Boucle pour les paniers d'utilisateurs.
+        for (const cart of userCarts.value) {
+            
+            // Trouver produit existant dans produits.
+            const existingProduct = products.value.find(
+                    (product) => product.id == cart.product_id
+                );
 
-                if (!existingProduct) {
+            // Si produit inexistant, requête GraphQL.
+            if (!existingProduct) {
 
-                    const apollo = new ApolloClient({
-                        link: createHttpLink({
-                            uri: 'http://localhost:8000/graphql',
-                        }),
-                        cache: new InMemoryCache(),
-                    })
+                const apollo = new ApolloClient({
+                    link: createHttpLink({
+                        uri: 'http://localhost:8000/graphql',
+                    }),
+                    cache: new InMemoryCache(),
+                })
 
-                    const productResult = await apollo.query({
-                        query: gql`
-                            query Product ($id: ID!) {
-                                product(id: $id) {
-                                    id
-                                    price
-                                    name
-                                    gender
-                                    type
-                                }
+                // Requête GraphQL pour obtenir le produit.
+                const productResult = await apollo.query({
+                    query: gql`
+                        query Product ($id: ID!) {
+                            product(id: $id) {
+                                id
+                                price
+                                name
+                                gender
+                                type
                             }
-                        `,
-                        variables: {
-                            id: cart.product_id
                         }
-                    })
-
-                    const productData = productResult.data.product
- 
-                    products.value.push({
-                        id: productData.id,
-                        cartId: cart.id,
-                        price: productData.price,
-                        name: productData.name,
-                        quantity: cart.quantity,
-                        gender: productData.gender,
-                        type: productData.type,
-                    })
-
-                    if (products.value[0].price == '') {
-                        products.value.shift()
+                    `,
+                    variables: {
+                        id: cart.product_id
                     }
+                })
+
+                const productData = productResult.data.product
+
+                // Ajouter produit à la liste de produits.
+                products.value.push({
+                    id: productData.id,
+                    cartId: cart.id,
+                    price: productData.price,
+                    name: productData.name,
+                    quantity: cart.quantity,
+                    gender: productData.gender,
+                    type: productData.type,
+                })
+
+                // Supprimer produits vides.
+                if (products.value[0].price == '') {
+                    products.value.shift()
                 }
             }
         }
+} 
 
         function getImagePath(gender: String, type: string, name: string) {
             return `src/assets/Images/${gender}/${type}/${name}`;
@@ -297,6 +301,7 @@ export default {
     border-top: none;
     height: 95vh;
     width: 80vw;
+    max-width: 1000px;
     overflow: auto;
 }
 

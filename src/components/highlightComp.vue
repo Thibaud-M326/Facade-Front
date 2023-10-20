@@ -1,8 +1,4 @@
 <template>
-    <!-- <p>
-        {{ products }}
-        {{ gender }}
-    </p> -->
     <div v-for="product of products?.products.data">
         <div v-if="product.is_highlighted">
             <img
