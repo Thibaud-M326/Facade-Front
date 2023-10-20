@@ -21,49 +21,35 @@
             <!-- <p>
                 {{ userID.id }}
             </p> -->
-            <div
-            v-for="product in products"
-            id="productDivs">
+            <div v-for="product in products" id="productDivs">
                 <div id="productPicture">
-                    <img 
-                    id="productImageImg" 
-                    :src="getImagePath(product.gender, product.type, product.name)" 
-                    alt="">
+                    <img id="productImageImg" :src="getImagePath(product.gender, product.type, product.name)" alt="">
                 </div>
-                <div 
-                id="productDescriptionDiv">
-                    <p 
-                    class="productDescriptionP"
-                    style="font-weight: bold">
-                        {{ product.name.split('.')[0].toUpperCase() }} 
+                <div id="productDescriptionDiv">
+                    <p class="productDescriptionP" style="font-weight: bold">
+                        {{ product.name.split('.')[0].toUpperCase() }}
                     </p>
                     <p class="productDescriptionP">
                         {{ parseFloat(product.price) * parseFloat(product.quantity) }}€
                     </p>
                     <p class="productDescriptionP">
-                        <button 
-                        class="plusOrMinusButton"
-                        @click="adjustQuantity(quantityButton[0].minus, product)">
+                        <button class="plusOrMinusButton" @click="adjustQuantity(quantityButton[0].minus, product)">
                             -
                         </button>
                         {{ product.quantity }}
-                        <button
-                        class="plusOrMinusButton"
-                        @click="adjustQuantity(quantityButton[0].plus, product)">
+                        <button class="plusOrMinusButton" @click="adjustQuantity(quantityButton[0].plus, product)">
                             +
                         </button>
                     </p>
                 </div>
                 <div id="removeProductDiv">
-                    <button 
-                    id="removeButton"
-                    @click="removeProductFromCart(product)">
+                    <button id="removeButton" @click="removeProductFromCart(product)">
                         x
                     </button>
                 </div>
             </div>
 
-            <div id="totalCountDiv" >
+            <div id="totalCountDiv">
                 <div id="shippingCostDiv">
                     <p class="shippingP">
                         shippingCost
@@ -74,14 +60,14 @@
                 </div>
                 <div id="totalCostDiv">
                     <p class="shippingP">
-                        Total 
+                        Total
                     </p>
                     <p class="shippingP">
                         {{ totalPrice }}€
                     </p>
                 </div>
             </div>
-            <div id="toPayPageDiv"> 
+            <div id="toPayPageDiv">
                 <button id="continueAndPayButton">
                     Continue and Pay ({{ productsToBuy }})
                 </button>
@@ -122,7 +108,7 @@ export default {
         const productsToBuy = ref(0)
 
         const { result, refetch: meRefetch } = useQuery(
-        gql`
+            gql`
             query me {
                 me {
                     id
@@ -144,27 +130,27 @@ export default {
 
         async function getProductsFromUserCarts() {
 
-        // Boucle pour les paniers d'utilisateurs.
-        for (const cart of userCarts.value) {
-            
-            // Trouver produit existant dans produits.
-            const existingProduct = products.value.find(
+            // Boucle pour les paniers d'utilisateurs.
+            for (const cart of userCarts.value) {
+
+                // Trouver produit existant dans produits.
+                const existingProduct = products.value.find(
                     (product) => product.id == cart.product_id
                 );
 
-            // Si produit inexistant, requête GraphQL.
-            if (!existingProduct) {
+                // Si produit inexistant, requête GraphQL.
+                if (!existingProduct) {
 
-                const apollo = new ApolloClient({
-                    link: createHttpLink({
-                        uri: 'http://localhost:8000/graphql',
-                    }),
-                    cache: new InMemoryCache(),
-                })
+                    const apollo = new ApolloClient({
+                        link: createHttpLink({
+                            uri: 'http://localhost:8000/graphql',
+                        }),
+                        cache: new InMemoryCache(),
+                    })
 
-                // Requête GraphQL pour obtenir le produit.
-                const productResult = await apollo.query({
-                    query: gql`
+                    // Requête GraphQL pour obtenir le produit.
+                    const productResult = await apollo.query({
+                        query: gql`
                         query Product ($id: ID!) {
                             product(id: $id) {
                                 id
@@ -175,31 +161,31 @@ export default {
                             }
                         }
                     `,
-                    variables: {
-                        id: cart.product_id
+                        variables: {
+                            id: cart.product_id
+                        }
+                    })
+
+                    const productData = productResult.data.product
+
+                    // Ajouter produit à la liste de produits.
+                    products.value.push({
+                        id: productData.id,
+                        cartId: cart.id,
+                        price: productData.price,
+                        name: productData.name,
+                        quantity: cart.quantity,
+                        gender: productData.gender,
+                        type: productData.type,
+                    })
+
+                    // Supprimer produits vides.
+                    if (products.value[0].price == '') {
+                        products.value.shift()
                     }
-                })
-
-                const productData = productResult.data.product
-
-                // Ajouter produit à la liste de produits.
-                products.value.push({
-                    id: productData.id,
-                    cartId: cart.id,
-                    price: productData.price,
-                    name: productData.name,
-                    quantity: cart.quantity,
-                    gender: productData.gender,
-                    type: productData.type,
-                })
-
-                // Supprimer produits vides.
-                if (products.value[0].price == '') {
-                    products.value.shift()
                 }
             }
         }
-} 
 
         function getImagePath(gender: String, type: string, name: string) {
             return `src/assets/Images/${gender}/${type}/${name}`;
@@ -233,27 +219,27 @@ export default {
 
         function countTotalPrice() {
             totalPrice.value = 0
-            for(const product of products.value) {
+            for (const product of products.value) {
                 totalPrice.value += product.price * product.quantity
             }
         }
 
         function countProductsToBuy() {
             productsToBuy.value = 0
-            for(const product of products.value) {
+            for (const product of products.value) {
                 productsToBuy.value += parseInt(product.quantity)
             }
         }
 
         function removeProductFromCart(product: Product) {
             console.log(product.cartId)
-            
+
             deleteCartMutation({
                 input: {
                     id: product.cartId
                 },
             })
-           
+
             meRefetch()
 
             products.value = products.value.filter((producto) => producto.cartId != product.cartId)
@@ -330,7 +316,7 @@ export default {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding-left: 5vh; 
+    padding-left: 5vh;
     width: 100%;
 }
 
