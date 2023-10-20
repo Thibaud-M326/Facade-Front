@@ -18,6 +18,9 @@
             <!-- <p>
                 {{ products }}
             </p> -->
+            <!-- <p>
+                {{ userID.id }}
+            </p> -->
             <div
             v-for="product in products"
             id="productDivs">
@@ -122,10 +125,11 @@ export default {
         const totalPrice = ref(0)
         const productsToBuy = ref(0)
 
-        const { result } = useQuery(
+        const { result, refetch: meRefetch } = useQuery(
         gql`
             query me {
                 me {
+                    id
                     carts {
                         id
                         product_id
@@ -136,17 +140,20 @@ export default {
         `)
 
         const userCarts = computed(() => result?.value?.me?.carts ?? [])
+        const userID = computed(() => result?.value?.me)
 
         watch(userCarts, performActionForCarts)
         watch(products.value, countTotalPrice)
         watch(products.value, countProductsToBuy)
 
         async function performActionForCarts() {
-            for (const cart of userCarts.value) {
 
-                const existingProduct = products.value.find((product) => product.id === cart.product_id);
+            for (const cart of userCarts.value) {
+                
+                const existingProduct = products.value.find((product) => product.id == cart.product_id);
 
                 if (!existingProduct) {
+
                     const apollo = new ApolloClient({
                         link: createHttpLink({
                             uri: 'http://localhost:8000/graphql',
@@ -170,9 +177,9 @@ export default {
                             id: cart.product_id
                         }
                     })
-                    
+
                     const productData = productResult.data.product
-                    
+ 
                     products.value.push({
                         id: productData.id,
                         cartId: cart.id,
@@ -224,7 +231,6 @@ export default {
             totalPrice.value = 0
             for(const product of products.value) {
                 totalPrice.value += product.price * product.quantity
-                console.log(totalPrice.value)
             }
         }
 
@@ -235,9 +241,32 @@ export default {
             }
         }
 
-        function removeProductFromCart() {
+        function removeProductFromCart(product: Product) {
+            console.log(product.cartId)
             
+            deleteCartMutation({
+                input: {
+                    id: product.cartId
+                },
+            })
+           
+            meRefetch()
+
+            products.value = products.value.filter((producto) => producto.cartId != product.cartId)
+            countProductsToBuy()
+            countTotalPrice()
         }
+
+        const { mutate: deleteCartMutation } = useMutation(gql`
+            mutation deleteCart ($input: deleteCartInput!) {
+                deleteCart (input: $input) {
+                    id
+                    user_id
+                    product_id
+                }
+            }
+        `
+        )
 
         return {
             products,
@@ -249,6 +278,9 @@ export default {
             totalPrice,
             countProductsToBuy,
             productsToBuy,
+            removeProductFromCart,
+            userID,
+            deleteCartMutation,
         }
     }
 }

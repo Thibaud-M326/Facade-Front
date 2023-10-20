@@ -3,7 +3,7 @@
         <div id="infoDiv">
             <div id="welcomeDiv">
                 <h1>
-                    WELCOME, {{ user.first_name.toUpperCase() }}
+                    WELCOME, {{ user?.first_name?.toUpperCase() }}
                 </h1>
             </div>
             <div id="personalInfosDiv">
@@ -28,7 +28,10 @@
                 <p class="infos">
                     {{ user.email }}
                 </p> 
-                <button>
+                <button
+                id="logoutButton"
+                @click="logout"
+                >
                     Logout
                 </button>
             </div>
@@ -38,8 +41,9 @@
 
 <script lang="ts">
 import { computed, ref } from 'vue'
-import { useQuery } from '@vue/apollo-composable'
+import { useQuery, useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
+import router from '@/router'
 
 export default {
     setup() {
@@ -47,6 +51,7 @@ export default {
         gql`
             query me {
                 me {
+                    id
                     email
                     first_name
                     last_name
@@ -55,10 +60,32 @@ export default {
             }
         `)
 
-        const user = computed(() => result.value.me ?? [])
+        const user = computed(() => result?.value?.me ?? [])
+
+        function logout() {
+            console.log(user.value.id)
+
+            logoutMutation()
+            localStorage.removeItem("apollo-token")
+            localStorage.removeItem("user")
+            router.push({ path: "/new" })
+            router.go(0)
+        }
+
+        const { mutate: logoutMutation } = useMutation(gql`
+            mutation logout {
+                  logout {
+                    message
+                    status
+                }
+            }
+        `
+        )
 
         return {
             user,
+            logout,
+            logoutMutation,
         }
     }
 }
@@ -106,5 +133,14 @@ export default {
 
 .infos {
     margin-bottom: 5vh;
+}
+
+#logoutButton {
+    width: 6vw;
+    height: 2vw;
+    min-width: 60px;
+    min-height: 30px;
+    border: 1px black solid;
+    border-radius: 3px;
 }
 </style>

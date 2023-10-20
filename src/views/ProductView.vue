@@ -179,7 +179,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 #containerDiv {
     display: flex;
     width: 100%;

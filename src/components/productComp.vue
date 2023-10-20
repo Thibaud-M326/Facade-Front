@@ -45,7 +45,7 @@ export default {
 #images-container {
     display: flex;
     flex-wrap: wrap;
-    width: 95%;
+    width: 93%;
 }
 
 #images-loop {

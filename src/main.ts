@@ -2,15 +2,12 @@ import './assets/main.css'
 
 import { createApp, provide, h } from 'vue'
 import { createPinia } from 'pinia'
-
 import App from './App.vue'
 import router from './router'
-
 // Apollo
 import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client/core'
 import { DefaultApolloClient } from '@vue/apollo-composable'
 import { setContext } from '@apollo/client/link/context'
-
 // Vuetify
 import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
@@ -24,10 +21,13 @@ const vuetify = createVuetify({
 
 // HTTP connection to the API
 const httpLink = createHttpLink({
-  // You should use an absolute URL here
   uri: 'http://localhost:8000/graphql',
 })
 
+// Cache implementation
+const cache = new InMemoryCache()
+
+// Insert apollo-token to request header
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem('apollo-token');
 
@@ -38,9 +38,6 @@ const authLink = setContext((_, { headers }) => {
     },
   };
 })
-  
-// Cache implementation
-const cache = new InMemoryCache()
 
 // Create the apollo client
 const apolloClient = new ApolloClient({
