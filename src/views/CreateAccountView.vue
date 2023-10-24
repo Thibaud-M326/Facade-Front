@@ -107,7 +107,7 @@ export default {
             }
         `, () => ({
             variables: {
-                // Exécute la mutation avec des données
+                // Exécute la mutation avec des données dynamique
                 input: {
                     email: email.value,
                     password: password.value,

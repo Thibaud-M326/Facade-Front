@@ -17,6 +17,13 @@
                     alt="Image loading error"
                     />
                 </RouterLink>
+                <div id="containerItemPrice">
+                    <p
+                    id="itemPrice"
+                    >
+                    {{ product.price + "€"}}
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -67,4 +74,22 @@ img {
     object-fit: cover;
     margin: 0;
 }
+
+#containerItemPrice {
+    position: relative;
+    height: 100%;
+}
+
+#itemPrice {
+    position: absolute;
+    right : 0; 
+    bottom : 0;
+    z-index: 1;
+    /* color: rgb(0, 0, 0); */
+    margin-right: 10px;
+    margin-bottom: 10px;
+      color: white;
+  mix-blend-mode: difference;
+}
+
 </style>
