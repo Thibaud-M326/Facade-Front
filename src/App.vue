@@ -17,13 +17,14 @@
 
 		<div>
 			<nav class="topNavbar">
-
 				<Connect 
 				:apolloToken="apolloToken"
 				:user="user"
 				/>
-
-				<button>
+				
+				<button
+				v-if="apolloToken"
+				>
 					<RouterLink to="/cart">Cart</RouterLink>
 				</button>
 			</nav>

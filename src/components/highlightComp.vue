@@ -32,6 +32,7 @@ export default {
     margin-left: 20vw;
     margin-right: 20vw;
     object-position: center -35vw;
+    border-radius: 3px;
 }
 
 #images-container {

@@ -6,71 +6,73 @@
                     Cart
                 </h1>
             </div>
-            <!-- <p>
-                {{ userCarts }}
-            </p> -->
-            <!-- <p v-for="product in products">
-                {{ product.price }}
-            </p> -->
-            <!-- <p>
-                {{ quantityButton[0].plus }}
-            </p> -->
-            <!-- <p>
-                {{ products }}
-            </p> -->
-            <!-- <p>
-                {{ userID.id }}
-            </p> -->
-            <div v-for="product in products" id="productDivs">
-                <div id="productPicture">
-                    <img id="productImageImg" :src="getImagePath(product.gender, product.type, product.name)" alt="">
-                </div>
-                <div id="productDescriptionDiv">
-                    <p class="productDescriptionP" style="font-weight: bold">
-                        {{ product.name.split('.')[0].toUpperCase() }}
-                    </p>
-                    <p class="productDescriptionP">
-                        {{ parseFloat(product.price) * parseFloat(product.quantity) }}€
-                    </p>
-                    <p class="productDescriptionP">
-                        <button class="plusOrMinusButton" @click="adjustQuantity(quantityButton[0].minus, product)">
-                            -
+            {{ products }}
+            <div
+            v-if="products[0].price !== ''"
+            >
+                <div 
+                v-for="product in products" id="productDivs">
+                    <div id="productPicture">
+                        <img id="productImageImg" :src="getImagePath(product.gender, product.type, product.name)" alt="">
+                    </div>
+                    <div id="productDescriptionDiv">
+                        <p class="productDescriptionP" style="font-weight: bold">
+                            {{ product.name.split('.')[0].toUpperCase() }}
+                        </p>
+                        <p class="productDescriptionP">
+                            {{ parseFloat(product.price) * parseFloat(product.quantity) }}€
+                        </p>
+                        <p class="productDescriptionP">
+                            <button class="plusOrMinusButton" @click="adjustQuantity(quantityButton[0].minus, product)">
+                                -
+                            </button>
+                            {{ product.quantity }}
+                            <button class="plusOrMinusButton" @click="adjustQuantity(quantityButton[0].plus, product)">
+                                +
+                            </button>
+                        </p>
+                    </div>
+                    <div id="removeProductDiv">
+                        <button id="removeButton" @click="removeProductFromCart(product)">
+                            x
                         </button>
-                        {{ product.quantity }}
-                        <button class="plusOrMinusButton" @click="adjustQuantity(quantityButton[0].plus, product)">
-                            +
-                        </button>
-                    </p>
+                    </div>
                 </div>
-                <div id="removeProductDiv">
-                    <button id="removeButton" @click="removeProductFromCart(product)">
-                        x
+
+                <div 
+                id="totalCountDiv"
+                v-if="products[0].price !== ''"
+                >
+                    <div id="shippingCostDiv">
+                        <p class="shippingP">
+                            shippingCost
+                        </p>
+                        <p class="shippingP">
+                            0.00€
+                        </p>
+                    </div>
+                    <div id="totalCostDiv">
+                        <p class="shippingP">
+                            Total
+                        </p>
+                        <p class="shippingP">
+                            {{ totalPrice }}€
+                        </p>
+                    </div>
+                </div>
+                <div id="toPayPageDiv">
+                    <button 
+                    v-if="products[0].price !== ''"
+                    id="continueAndPayButton">
+                        Continue and Pay ({{ productsToBuy }})
                     </button>
                 </div>
             </div>
-
-            <div id="totalCountDiv">
-                <div id="shippingCostDiv">
-                    <p class="shippingP">
-                        shippingCost
-                    </p>
-                    <p class="shippingP">
-                        0.00€
-                    </p>
-                </div>
-                <div id="totalCostDiv">
-                    <p class="shippingP">
-                        Total
-                    </p>
-                    <p class="shippingP">
-                        {{ totalPrice }}€
-                    </p>
-                </div>
-            </div>
-            <div id="toPayPageDiv">
-                <button id="continueAndPayButton">
-                    Continue and Pay ({{ productsToBuy }})
-                </button>
+            <div
+            v-else
+            id="emptyCart"
+            >
+            Your cart is empty, browse our site to find what you are looking for
             </div>
         </div>
     </div>
@@ -82,6 +84,7 @@ import { provideApolloClient, useMutation, useQuery } from '@vue/apollo-composab
 import gql from 'graphql-tag'
 import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client/core'
 import { DefaultApolloClient } from '@vue/apollo-composable'
+import router from '@/router'
 
 export default {
     setup() {
@@ -377,5 +380,13 @@ export default {
     height: 4vh;
     width: 80%;
     border-radius: 5px;
+}
+
+#emptyCart {
+    display: flex;
+    justify-content: center;
+    margin-top: 5vh;
+    padding-bottom: 5vh;
+    border-bottom: 1px solid black;
 }
 </style>

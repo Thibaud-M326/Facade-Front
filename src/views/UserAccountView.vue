@@ -47,6 +47,9 @@ import router from '@/router'
 
 export default {
     setup() {
+
+        const pageReloaded = ref(false);
+
         const { result } = useQuery(
         gql`
             query me {
@@ -63,16 +66,10 @@ export default {
         const user = computed(() => result?.value?.me ?? [])
 
         function logout() {
-            console.log(user.value.id)
-
             logoutMutation()
-            localStorage.removeItem("apollo-token")
-            localStorage.removeItem("user")
-            router.push({ path: "/new" })
-            router.go(0)
         }
 
-        const { mutate: logoutMutation } = useMutation(gql`
+        const { mutate: logoutMutation, onDone } = useMutation(gql`
             mutation logout {
                   logout {
                     message
@@ -81,6 +78,19 @@ export default {
             }
         `
         )
+
+        onDone(result => {
+            localStorage.removeItem("apollo-token")
+            localStorage.removeItem("user")
+
+            router.push({ path: "/new" })
+            router.afterEach((to, from) => {
+            if (to.path === '/new' && !pageReloaded.value) {
+                pageReloaded.value = true; // Marquez que la page a été rechargée
+                window.location.reload(); // Rechargez la page
+            }
+            });
+        })
 
         return {
             user,

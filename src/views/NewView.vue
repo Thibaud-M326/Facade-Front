@@ -67,6 +67,7 @@ import highlight1 from '@/assets/Images/men/tshirt/Balcaca.jpeg'
 import highlight2 from '@/assets/Images/women/shoes/VelgaBellna.jpeg'
 import highlight3 from '@/assets/Images/men/jean/Baaci.jpeg'
 import highlight4 from '@/assets/Images/men/tshirt/Balgech.jpeg'
+import router from '@/router'
 
 export default {
   data() {

@@ -63,6 +63,7 @@ export default {
     width: 30vw;
     border: solid black 1px;
     margin: 2px;
+    border-radius: 3px;
     
 }
 
