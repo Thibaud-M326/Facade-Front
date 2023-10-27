@@ -112,7 +112,7 @@ img {
     padding: 1vh 3vh;
     font-size: max(1vh, 0.7vw);
     border-radius: 10px;
-    border: 2px solid black;
+    border: 1px solid black;
 }
 
 </style>

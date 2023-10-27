@@ -79,7 +79,7 @@
 </template>
 
 <script lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, } from 'vue'
 import { provideApolloClient, useMutation, useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client/core'
