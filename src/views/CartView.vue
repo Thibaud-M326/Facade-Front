@@ -55,9 +55,10 @@
                     </div>
                 </div>
                 <div id="toPayPageDiv">
-                    <button id="continueAndPayButton">
+                    <Paypal />
+                    <!-- <button id="continueAndPayButton">
                         Continue and Pay ({{ productsToBuy }})
-                    </button>
+                    </button> -->
                 </div>
             </div>
             <div v-else id="emptyCart">
@@ -68,7 +69,6 @@
             Load list
         </button> -->
         
-        <Paypal />
     </div>
 </template>
 
@@ -125,11 +125,6 @@ export default {
         })
         const userCarts = computed(() => result?.value?.me?.carts ?? [])
         const userID = computed(() => result?.value?.me)
-
-        // function loadOrRefetch () {
-        //     meRefetch()
-        // }
-        // loadOrRefetch()
 
         watch(userCarts, getProductsFromUserCarts)
         watch(products.value, countTotalPrice)
@@ -373,10 +368,11 @@ export default {
 }
 
 #toPayPageDiv {
-    height: 12vh;
+    height: 30vh;
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
     border-bottom: 1px solid black;
 }
 
