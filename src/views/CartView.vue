@@ -7,11 +7,8 @@
                 </h1>
             </div>
             {{ products }}
-            <div
-            v-if="products[0].price !== ''"
-            >
-                <div 
-                v-for="product in products" id="productDivs">
+            <div v-if="products[0].price !== ''">
+                <div v-for="product in products" id="productDivs">
                     <div id="productPicture">
                         <img id="productImageImg" :src="getImagePath(product.gender, product.type, product.name)" alt="">
                     </div>
@@ -39,10 +36,7 @@
                     </div>
                 </div>
 
-                <div 
-                id="totalCountDiv"
-                v-if="products[0].price !== ''"
-                >
+                <div id="totalCountDiv">
                     <div id="shippingCostDiv">
                         <p class="shippingP">
                             shippingCost
@@ -61,32 +55,36 @@
                     </div>
                 </div>
                 <div id="toPayPageDiv">
-                    <button 
-                    v-if="products[0].price !== ''"
-                    id="continueAndPayButton">
+                    <button id="continueAndPayButton">
                         Continue and Pay ({{ productsToBuy }})
                     </button>
                 </div>
             </div>
-            <div
-            v-else
-            id="emptyCart"
-            >
-            Your cart is empty, browse our site to find what you are looking for
+            <div v-else id="emptyCart">
+                Your cart is empty, browse our site to find what you are looking for
             </div>
         </div>
+        <!-- <button class="bg-green-200 rounded-lg p-4" @click="loadOrRefetch()">
+            Load list
+        </button> -->
+        
+        <Paypal />
     </div>
 </template>
 
 <script lang="ts">
-import { computed, ref, watch, } from 'vue'
-import { provideApolloClient, useMutation, useQuery } from '@vue/apollo-composable'
-import gql from 'graphql-tag'
+import { computed, ref, watch, onMounted } from 'vue'
 import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client/core'
-import { DefaultApolloClient } from '@vue/apollo-composable'
+import { useMutation, useQuery, useLazyQuery } from '@vue/apollo-composable'
+import gql from 'graphql-tag'
 import router from '@/router'
+import { loadRouteLocation } from 'vue-router'
+import Paypal from '../components/paypalComp.vue'
 
 export default {
+    components: {
+        Paypal
+    },
     setup() {
         const products = ref([
             {
@@ -119,13 +117,19 @@ export default {
                         id
                         product_id
                         quantity
-                    }                           
+                    }
                 }
             }
-        `)
-
+        `, null, {
+            fetchPolicy: 'network-only'
+        })
         const userCarts = computed(() => result?.value?.me?.carts ?? [])
         const userID = computed(() => result?.value?.me)
+
+        // function loadOrRefetch () {
+        //     meRefetch()
+        // }
+        // loadOrRefetch()
 
         watch(userCarts, getProductsFromUserCarts)
         watch(products.value, countTotalPrice)
@@ -182,7 +186,7 @@ export default {
                         type: productData.type,
                     })
 
-                    // Supprimer produits vides.
+                    // // Supprimer produits vides.
                     if (products.value[0].price == '') {
                         products.value.shift()
                     }
@@ -235,8 +239,6 @@ export default {
         }
 
         function removeProductFromCart(product: Product) {
-            console.log(product.cartId)
-
             deleteCartMutation({
                 input: {
                     id: product.cartId
@@ -262,6 +264,10 @@ export default {
         )
 
         return {
+            // loadOrRefetch,
+            // meLoad,
+            // fetchPolicy,
+            // meRefetch,
             products,
             quantityButton,
             userCarts,

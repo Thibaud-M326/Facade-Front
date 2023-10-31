@@ -153,4 +153,5 @@ export default {
     border: 1px black solid;
     border-radius: 3px;
 }
+
 </style>
