@@ -14,7 +14,6 @@
                 Create a Profile
             </h1>
                 <v-form @submit.prevent="createUserMutation()">
-                <!-- <v-form @submit.prevent="testValue()"> -->
                     <v-text-field v-model="email" :rules="emailRules" label="Email"></v-text-field>
                     <v-text-field v-model="password" :rules="passwordRules" label="Password"></v-text-field>
                     <v-text-field v-model="firstName" :rules="firstNameRules" label="First name"></v-text-field>
@@ -85,12 +84,14 @@ export default {
         }
     },
     setup() {
+        // Crée des références pour les données
         const email = ref('')
         const password = ref('')
         const firstName = ref('')
         const lastName = ref('')
         const phoneNumber = ref('')
 
+        // Utilise useMutation pour la mutation
         const { mutate: createUserMutation, onDone } = useMutation(gql`
             mutation createUser ($input: CreateUserInput!) {
                 createUser(input: $input) {
@@ -106,6 +107,7 @@ export default {
             }
         `, () => ({
             variables: {
+                // Exécute la mutation avec des données dynamique
                 input: {
                     email: email.value,
                     password: password.value,
@@ -116,25 +118,19 @@ export default {
             }
         }))
 
-        function testValue() {
-            console.log(email)
-        }
-
         onDone(result => {
+            // Affiche les données dans la console
             console.log(result.data)
         })
 
         return {
             createUserMutation,
-            testValue,
             email,
             password,
             firstName,
             lastName,
             phoneNumber,          
-
         }
-
     }
 }
 </script>

@@ -17,13 +17,14 @@
 
 		<div>
 			<nav class="topNavbar">
-
 				<Connect 
 				:apolloToken="apolloToken"
 				:user="user"
 				/>
-
-				<button>
+				
+				<button
+				v-if="apolloToken"
+				>
 					<RouterLink to="/cart">Cart</RouterLink>
 				</button>
 			</nav>
@@ -37,9 +38,14 @@
 	</p> -->
 
 	<footer>
-		<p>
-			footer
-		</p>
+		<div>
+			<p>
+				@ 2023 FACADE
+			</p>
+			<p>
+				The photographs may have been retouched
+			</p>
+		</div>
 	</footer>
 
 </template>
@@ -105,5 +111,17 @@ a {
 
 #connectRouter {
 	margin-left: 0px;
+}
+
+footer {
+	background-color: #AAAAAC;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+	height: 5vh;
+	min-height: 60px;
+	font-size: 10px;
+	margin-top: 20px;
 }
 </style>

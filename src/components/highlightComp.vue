@@ -1,8 +1,4 @@
 <template>
-    <!-- <p>
-        {{ products }}
-        {{ gender }}
-    </p> -->
     <div v-for="product of products?.products.data">
         <div v-if="product.is_highlighted">
             <img
@@ -36,6 +32,7 @@ export default {
     margin-left: 20vw;
     margin-right: 20vw;
     object-position: center -35vw;
+    border-radius: 3px;
 }
 
 #images-container {

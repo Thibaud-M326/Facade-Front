@@ -6,99 +6,85 @@
                     Cart
                 </h1>
             </div>
-            <!-- <p>
-                {{ userCarts }}
-            </p> -->
-            <!-- <p v-for="product in products">
-                {{ product.price }}
-            </p> -->
-            <!-- <p>
-                {{ quantityButton[0].plus }}
-            </p> -->
-            <!-- <p>
-                {{ products }}
-            </p> -->
-            <div
-            v-for="product in products"
-            id="productDivs">
-                <div id="productPicture">
-                    <img 
-                    id="productImageImg" 
-                    :src="getImagePath(product.gender, product.type, product.name)" 
-                    alt="">
-                </div>
-                <div 
-                id="productDescriptionDiv">
-                    <p 
-                    class="productDescriptionP"
-                    style="font-weight: bold"
-                    >
-                        {{ product.name.split('.')[0].toUpperCase() }} 
-                    </p>
-                    <p class="productDescriptionP">
-                        {{ product.price * product.quantity }}€
-                    </p>
-                    <p class="productDescriptionP">
-                        <button 
-                        class="plusOrMinusButton"
-                        @click="adjustQuantity(quantityButton[0].minus, product)"
-                        >
-                            -
+            {{ products }}
+            <div v-if="products[0].price !== ''">
+                <div v-for="product in products" id="productDivs">
+                    <div id="productPicture">
+                        <img id="productImageImg" :src="getImagePath(product.gender, product.type, product.name)" alt="">
+                    </div>
+                    <div id="productDescriptionDiv">
+                        <p class="productDescriptionP" style="font-weight: bold">
+                            {{ product.name.split('.')[0].toUpperCase() }}
+                        </p>
+                        <p class="productDescriptionP">
+                            {{ parseFloat(product.price) * parseFloat(product.quantity) }}€
+                        </p>
+                        <p class="productDescriptionP">
+                            <button class="plusOrMinusButton" @click="adjustQuantity(quantityButton[0].minus, product)">
+                                -
+                            </button>
+                            {{ product.quantity }}
+                            <button class="plusOrMinusButton" @click="adjustQuantity(quantityButton[0].plus, product)">
+                                +
+                            </button>
+                        </p>
+                    </div>
+                    <div id="removeProductDiv">
+                        <button id="removeButton" @click="removeProductFromCart(product)">
+                            x
                         </button>
-                        {{ product.quantity }}
-                        <button
-                        class="plusOrMinusButton"
-                        @click="adjustQuantity(quantityButton[0].plus, product)"
-                        >
-                            +
-                        </button>
-                    </p>
+                    </div>
                 </div>
-                <div id="removeProductDiv">
-                    <button 
-                    id="removeButton"
-                    @click="removeProductFromCart(product)"
-                    >
-                        x
+
+                <div id="totalCountDiv">
+                    <div id="shippingCostDiv">
+                        <p class="shippingP">
+                            shippingCost
+                        </p>
+                        <p class="shippingP">
+                            0.00€
+                        </p>
+                    </div>
+                    <div id="totalCostDiv">
+                        <p class="shippingP">
+                            Total
+                        </p>
+                        <p class="shippingP">
+                            {{ totalPrice }}€
+                        </p>
+                    </div>
+                </div>
+                <div id="toPayPageDiv">
+                    <button id="continueAndPayButton">
+                        Continue and Pay ({{ productsToBuy }})
                     </button>
                 </div>
             </div>
-
-            <div id="totalCountDiv" >
-                <div id="shippingCostDiv">
-                    <p class="shippingP">
-                        shippingCost
-                    </p>
-                    <p class="shippingP">
-                        0.00€
-                    </p>
-                </div>
-                <div id="totalCostDiv">
-                    <p class="shippingP">
-                        Total 
-                    </p>
-                    <p class="shippingP">
-                        {{ totalPrice }}€
-                    </p>
-                </div>
-            </div>
-            <div id="toPayPageDiv"> 
-                <button id="continueAndPayButton">
-                    Continue and Pay ({{ productsToBuy }})
-                </button>
+            <div v-else id="emptyCart">
+                Your cart is empty, browse our site to find what you are looking for
             </div>
         </div>
+        <!-- <button class="bg-green-200 rounded-lg p-4" @click="loadOrRefetch()">
+            Load list
+        </button> -->
+        
+        <Paypal />
     </div>
 </template>
 
 <script lang="ts">
-import { computed, ref, watch } from 'vue'
-import { provideApolloClient, useMutation, useQuery } from '@vue/apollo-composable'
-import gql from 'graphql-tag'
+import { computed, ref, watch, onMounted } from 'vue'
 import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client/core'
-import { DefaultApolloClient } from '@vue/apollo-composable'
+import { useMutation, useQuery, useLazyQuery } from '@vue/apollo-composable'
+import gql from 'graphql-tag'
+import router from '@/router'
+import { loadRouteLocation } from 'vue-router'
+import Paypal from '../components/paypalComp.vue'
 
 export default {
+    components: {
+        Paypal
+    },
     setup() {
         const products = ref([
             {
@@ -122,31 +108,46 @@ export default {
         const totalPrice = ref(0)
         const productsToBuy = ref(0)
 
-        const { result } = useQuery(
-        gql`
+        const { result, refetch: meRefetch } = useQuery(
+            gql`
             query me {
                 me {
+                    id
                     carts {
                         id
                         product_id
                         quantity
-                    }                           
+                    }
                 }
             }
-        `)
-
+        `, null, {
+            fetchPolicy: 'network-only'
+        })
         const userCarts = computed(() => result?.value?.me?.carts ?? [])
+        const userID = computed(() => result?.value?.me)
 
-        watch(userCarts, performActionForCarts)
+        // function loadOrRefetch () {
+        //     meRefetch()
+        // }
+        // loadOrRefetch()
+
+        watch(userCarts, getProductsFromUserCarts)
         watch(products.value, countTotalPrice)
         watch(products.value, countProductsToBuy)
 
-        async function performActionForCarts() {
+        async function getProductsFromUserCarts() {
+
+            // Boucle pour les paniers d'utilisateurs.
             for (const cart of userCarts.value) {
 
-                const existingProduct = products.value.find((product) => product.id === cart.product_id);
+                // Trouver produit existant dans produits.
+                const existingProduct = products.value.find(
+                    (product) => product.id == cart.product_id
+                );
 
+                // Si produit inexistant, requête GraphQL.
                 if (!existingProduct) {
+
                     const apollo = new ApolloClient({
                         link: createHttpLink({
                             uri: 'http://localhost:8000/graphql',
@@ -154,25 +155,27 @@ export default {
                         cache: new InMemoryCache(),
                     })
 
+                    // Requête GraphQL pour obtenir le produit.
                     const productResult = await apollo.query({
                         query: gql`
-                            query Product ($id: ID!) {
-                                product(id: $id) {
-                                    id
-                                    price
-                                    name
-                                    gender
-                                    type
-                                }
+                        query Product ($id: ID!) {
+                            product(id: $id) {
+                                id
+                                price
+                                name
+                                gender
+                                type
                             }
-                        `,
+                        }
+                    `,
                         variables: {
                             id: cart.product_id
                         }
                     })
-                    
+
                     const productData = productResult.data.product
-                    
+
+                    // Ajouter produit à la liste de produits.
                     products.value.push({
                         id: productData.id,
                         cartId: cart.id,
@@ -183,6 +186,7 @@ export default {
                         type: productData.type,
                     })
 
+                    // // Supprimer produits vides.
                     if (products.value[0].price == '') {
                         products.value.shift()
                     }
@@ -222,24 +226,48 @@ export default {
 
         function countTotalPrice() {
             totalPrice.value = 0
-            for(const product of products.value) {
+            for (const product of products.value) {
                 totalPrice.value += product.price * product.quantity
-                console.log(totalPrice.value)
             }
         }
 
         function countProductsToBuy() {
             productsToBuy.value = 0
-            for(const product of products.value) {
+            for (const product of products.value) {
                 productsToBuy.value += parseInt(product.quantity)
             }
         }
 
-        function removeProductFromCart() {
-            
+        function removeProductFromCart(product: Product) {
+            deleteCartMutation({
+                input: {
+                    id: product.cartId
+                },
+            })
+
+            meRefetch()
+
+            products.value = products.value.filter((producto) => producto.cartId != product.cartId)
+            countProductsToBuy()
+            countTotalPrice()
         }
 
+        const { mutate: deleteCartMutation } = useMutation(gql`
+            mutation deleteCart ($input: deleteCartInput!) {
+                deleteCart (input: $input) {
+                    id
+                    user_id
+                    product_id
+                }
+            }
+        `
+        )
+
         return {
+            // loadOrRefetch,
+            // meLoad,
+            // fetchPolicy,
+            // meRefetch,
             products,
             quantityButton,
             userCarts,
@@ -249,6 +277,9 @@ export default {
             totalPrice,
             countProductsToBuy,
             productsToBuy,
+            removeProductFromCart,
+            userID,
+            deleteCartMutation,
         }
     }
 }
@@ -265,6 +296,7 @@ export default {
     border-top: none;
     height: 95vh;
     width: 80vw;
+    max-width: 1000px;
     overflow: auto;
 }
 
@@ -293,7 +325,7 @@ export default {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding-left: 5vh; 
+    padding-left: 5vh;
     width: 100%;
 }
 
@@ -354,5 +386,13 @@ export default {
     height: 4vh;
     width: 80%;
     border-radius: 5px;
+}
+
+#emptyCart {
+    display: flex;
+    justify-content: center;
+    margin-top: 5vh;
+    padding-bottom: 5vh;
+    border-bottom: 1px solid black;
 }
 </style>

@@ -26,11 +26,22 @@
                 </p>
                 <hr>
                 <button 
+                v-if="apolloToken"
                 id="addToCartButton"
                 @click="addToCart()"
                 >
                     Add to cart
                     ({{ existingProduct.quantity }})
+                </button>
+                <button
+                id="connectButton"
+                v-else
+                >
+                    <!-- <Connect 
+                    :apolloToken="apolloToken"
+                    :user="user"
+                    /> -->
+                    Please Connect to save Items
                 </button>
             </div>
         </div>
@@ -43,14 +54,37 @@ import { useRoute } from "vue-router";
 import { useQuery, useMutation } from '@vue/apollo-composable'
 import { watch } from 'vue'
 import gql from 'graphql-tag'
+import Connect from '../components/connectComp.vue'
 
 export default {
     name: 'ProductView',
+    data() {
+        return {
+			apolloToken: '',
+			user: {
+				email: '',
+				id: '',
+				is_admin: '',
+			},
+        }
+    },
     methods: {
         getImagePath(gender: String, type: string, name: string) {
             return `../src/assets/Images/${gender}/${type}/${name}`;
-        }
+        },
+		updateTokenAndUser() {
+			if (localStorage.getItem("apollo-token")) {
+				this.apolloToken = localStorage.getItem("apollo-token")!
+				this.user = JSON.parse(localStorage.getItem("user")!)
+			}
+		},
     },
+	mounted() {
+		this.updateTokenAndUser()
+	},
+	components: {
+		Connect,
+	},
     setup() {
         const existingProduct = ref({
             quantity: 0,
@@ -179,7 +213,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 #containerDiv {
     display: flex;
     width: 100%;
@@ -238,6 +272,16 @@ hr {
     border: none;
     border-radius: 3px;
     cursor: pointer;
+}
+
+#connectButton {
+    background-color: black;
+    color: rgb(248, 248, 248);
+    width: 100%;
+    height: 2.5rem;
+    border: none;
+    border-radius: 3px;
+    cursor: default;
 }
 
 @media only screen and (max-width: 900px) {
