@@ -6,8 +6,8 @@
                     Cart
                 </h1>
             </div>
-            {{ products }}
-            <div v-if="products[0].price !== ''">
+            <!-- {{ products }} -->
+            <div v-if="products[0]">
                 <div v-for="product in products" id="productDivs">
                     <div id="productPicture">
                         <img id="productImageImg" :src="getImagePath(product.gender, product.type, product.name)" alt="">
@@ -55,7 +55,11 @@
                     </div>
                 </div>
                 <div id="toPayPageDiv">
-                    <Paypal />
+                    <Paypal
+                        :userCarts="userCarts"
+                        :products="products"
+                        :totalPrice="totalPrice"
+                    />
                     <!-- <button id="continueAndPayButton">
                         Continue and Pay ({{ productsToBuy }})
                     </button> -->
@@ -83,7 +87,7 @@ import Paypal from '../components/paypalComp.vue'
 
 export default {
     components: {
-        Paypal
+        Paypal,
     },
     setup() {
         const products = ref([
@@ -259,10 +263,6 @@ export default {
         )
 
         return {
-            // loadOrRefetch,
-            // meLoad,
-            // fetchPolicy,
-            // meRefetch,
             products,
             quantityButton,
             userCarts,
@@ -276,7 +276,7 @@ export default {
             userID,
             deleteCartMutation,
         }
-    }
+    },
 }
 </script>
 

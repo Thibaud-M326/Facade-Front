@@ -1,16 +1,31 @@
 <template>
     <paypal-buttons
-     id="paypalButtons"
+        v-if="!paid"
+        id="paypalButtons"
     >
     </paypal-buttons>
+    <div 
+        v-else
+        id="confirmation"
+    >
+        Order complete!
+    </div>
+
 </template>
 
 <script lang="ts">
 import { loadScript } from '@paypal/paypal-js'
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, defineProps, onUpdated } from 'vue';
 
 export default {
-    setup() {
+    props: {
+        userCarts: Object,
+        products: Object,
+        totalPrice: Number,
+    },
+    setup(props) {
+        const paid = ref(false)
+
         async function loadScriptPaypal() {
             let paypal
 
@@ -22,14 +37,47 @@ export default {
 
             if (paypal) {
                 try {
-                    await paypal.Buttons!().render("#paypalButtons")
+                    await paypal
+                    .Buttons!({
+                        createOrder: createOrder,
+                        onApprove: onApprove,
+                    })
+                    .render("#paypalButtons")
                 } catch (error) {
                     console.error("failed to render the Paypal Buttons", error)
                 }
             }
         }
-
         loadScriptPaypal()
+        
+        function createOrder(data: object, actions: object) {
+            console.log("creating order...")
+            return actions.order.create({
+                purchase_units: [
+                    {
+                        amount: {
+                            value: props.totalPrice
+                        }
+                    }
+                ]
+            })
+        }
+
+        function onApprove(data: object, actions: object) {
+            console.log("order approved...")
+            return actions.order.capture().then(() => {
+                paid.value = true
+                console.log("order completed !")
+            })
+        }
+
+        return {
+            paid,
+        }
     },
 }
 </script>
+
+<style scoped>
+
+</style>
