@@ -6,73 +6,82 @@
                     Cart
                 </h1>
             </div>
-            <!-- {{ products }} -->
-            <div v-if="products[0]">
-                <div v-for="product in products" id="productDivs">
-                    <div id="productPicture">
-                        <img id="productImageImg" :src="getImagePath(product.gender, product.type, product.name)" alt="">
-                    </div>
-                    <div id="productDescriptionDiv">
-                        <p class="productDescriptionP" style="font-weight: bold">
-                            {{ product.name.split('.')[0].toUpperCase() }}
-                        </p>
-                        <p class="productDescriptionP">
-                            {{ parseFloat(product.price) * parseFloat(product.quantity) }}€
-                        </p>
-                        <p class="productDescriptionP">
-                            <button class="plusOrMinusButton" @click="adjustQuantity(quantityButton[0].minus, product)">
-                                -
+            <div v-if="isPaid === false">
+                <div v-if="products[0]">
+                    <div v-for="product in products" id="productDivs">
+                        <div id="productPicture">
+                            <img id="productImageImg" :src="getImagePath(product.gender, product.type, product.name)"
+                                alt="">
+                        </div>
+                        <div id="productDescriptionDiv">
+                            <p class="productDescriptionP" style="font-weight: bold">
+                                {{ product.name.split('.')[0].toUpperCase() }}
+                            </p>
+                            <p class="productDescriptionP">
+                                {{ parseFloat(product.price) * parseFloat(product.quantity) }}€
+                            </p>
+                            <p class="productDescriptionP">
+                                <button class="plusOrMinusButton" @click="adjustQuantity(quantityButton[0].minus, product)">
+                                    -
+                                </button>
+                                {{ product.quantity }}
+                                <button class="plusOrMinusButton" @click="adjustQuantity(quantityButton[0].plus, product)">
+                                    +
+                                </button>
+                            </p>
+                        </div>
+                        <div id="removeProductDiv">
+                            <button id="removeButton" @click="removeProductFromCart(product)">
+                                x
                             </button>
-                            {{ product.quantity }}
-                            <button class="plusOrMinusButton" @click="adjustQuantity(quantityButton[0].plus, product)">
-                                +
-                            </button>
-                        </p>
+                        </div>
                     </div>
-                    <div id="removeProductDiv">
-                        <button id="removeButton" @click="removeProductFromCart(product)">
-                            x
-                        </button>
-                    </div>
-                </div>
 
-                <div id="totalCountDiv">
-                    <div id="shippingCostDiv">
-                        <p class="shippingP">
-                            shippingCost
-                        </p>
-                        <p class="shippingP">
-                            0.00€
-                        </p>
+                    <div id="totalCountDiv">
+                        <div id="shippingCostDiv">
+                            <p class="shippingP">
+                                shippingCost
+                            </p>
+                            <p class="shippingP">
+                                0.00€
+                            </p>
+                        </div>
+                        <div id="totalCostDiv">
+                            <p class="shippingP">
+                                Total
+                            </p>
+                            <p class="shippingP">
+                                {{ totalPrice }}€
+                            </p>
+                        </div>
                     </div>
-                    <div id="totalCostDiv">
-                        <p class="shippingP">
-                            Total
-                        </p>
-                        <p class="shippingP">
-                            {{ totalPrice }}€
+                    <div id="toPayPageDiv">
+                        <Paypal 
+                            :userCarts="userCarts" 
+                            :products="products" 
+                            :totalPrice="totalPrice"
+                            @isPaid="(msg) => isPaid = msg" 
+                        />
+                        <p>
+                            {{ isPaid }}
                         </p>
                     </div>
                 </div>
-                <div id="toPayPageDiv">
-                    <Paypal
-                        :userCarts="userCarts"
-                        :products="products"
-                        :totalPrice="totalPrice"
-                    />
-                    <!-- <button id="continueAndPayButton">
-                        Continue and Pay ({{ productsToBuy }})
-                    </button> -->
+                <div v-else id="emptyCart">
+                    <p>
+                        Your cart is empty, browse our site to find what you are looking for
+                    </p>
                 </div>
             </div>
-            <div v-else id="emptyCart">
-                Your cart is empty, browse our site to find what you are looking for
+            <div v-else id="orderComplete">
+                <p id="thanksP">
+                    Thanks for your order !
+                </p>
+                <p>
+                    You will receive a summary email of your order shortly.
+                </p>
             </div>
         </div>
-        <!-- <button class="bg-green-200 rounded-lg p-4" @click="loadOrRefetch()">
-            Load list
-        </button> -->
-        
     </div>
 </template>
 
@@ -81,8 +90,6 @@ import { computed, ref, watch, onMounted } from 'vue'
 import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client/core'
 import { useMutation, useQuery, useLazyQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import router from '@/router'
-import { loadRouteLocation } from 'vue-router'
 import Paypal from '../components/paypalComp.vue'
 
 export default {
@@ -112,6 +119,11 @@ export default {
         const totalPrice = ref(0)
         const productsToBuy = ref(0)
 
+        //value changed with paypalComp emit
+        const isPaid = ref(false)
+
+        //this request is launched every time the page is viewed
+        //due to fetchPolicy.
         const { result, refetch: meRefetch } = useQuery(
             gql`
             query me {
@@ -130,12 +142,12 @@ export default {
         const userCarts = computed(() => result?.value?.me?.carts ?? [])
         const userID = computed(() => result?.value?.me)
 
+        //each time the "me" request is called we call these 3 functions
         watch(userCarts, getProductsFromUserCarts)
         watch(products.value, countTotalPrice)
         watch(products.value, countProductsToBuy)
 
         async function getProductsFromUserCarts() {
-
             // Boucle pour les paniers d'utilisateurs.
             for (const cart of userCarts.value) {
 
@@ -193,12 +205,14 @@ export default {
             }
         }
 
+        //find the path of a product image with its gender, type and name
         function getImagePath(gender: String, type: string, name: string) {
             return `src/assets/Images/${gender}/${type}/${name}`;
         }
 
+        //called when click on "+" or "-" 
+        //update product quantity front and in bdd call watched function l:
         function adjustQuantity(plusOrMinus: String, product: Product) {
-
             if (plusOrMinus == 'plus') {
                 product.quantity++
             } else if (product.quantity > 1) {
@@ -263,6 +277,7 @@ export default {
         )
 
         return {
+            isPaid,
             products,
             quantityButton,
             userCarts,
@@ -289,7 +304,7 @@ export default {
 #cartContainerDiv {
     border: 1px solid black;
     border-top: none;
-    height: 95vh;
+    height: 87vh;
     width: 80vw;
     max-width: 1000px;
     overflow: auto;
@@ -390,5 +405,21 @@ export default {
     margin-top: 5vh;
     padding-bottom: 5vh;
     border-bottom: 1px solid black;
+}
+
+#orderComplete {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 80%;
+    color: rgb(4, 153, 84);
+    font-size: large;
+    font-weight: bold;
+}
+
+#thanksP {
+    margin: 4vh;
 }
 </style>

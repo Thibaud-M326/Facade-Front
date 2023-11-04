@@ -8,21 +8,24 @@
 </template>
 
 <script lang="ts">
-import { defineProps } from 'vue';
+import { ref } from 'vue';
 
 export default {
     props: {
         msg: String
     },
-    setup() {
-        const props = defineProps({
-            msg: String
-        }) 
+    setup(props, { emit }) {
 
-        console.log(props)
+        const message = ref('coucou')
+
+        const sendMessageToParent = (message: string) => {
+            emit('response', message);
+        }
+
+        sendMessageToParent(message.value)
 
         return {
-           props,
+            sendMessageToParent
         }
     }
 }

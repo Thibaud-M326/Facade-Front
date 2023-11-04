@@ -2,7 +2,13 @@
     <h1>
         parent
     </h1>
-    <TestProps :msg="greeting"/>
+    <TestProps 
+        :msg="greeting"
+        @response="(msg) => childMsg = msg"
+    />
+    <h2>
+        {{ childMsg }}
+    </h2>
 </template>
 
 <script lang="ts">
@@ -14,11 +20,13 @@ export default {
 		TestProps,
 	},
     setup() {
-        const greeting = ref('hello from parent')        
+        const greeting = ref('hello from parent')
+        const childMsg = ref('no child msg yet')
 
         return {
-           greeting, 
-        }
+            greeting,
+            childMsg,
+        };
     }
 }
 </script>

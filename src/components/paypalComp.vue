@@ -1,6 +1,6 @@
 <template>
     <paypal-buttons
-        v-if="!paid"
+        v-if="!isPaid"
         id="paypalButtons"
     >
     </paypal-buttons>
@@ -10,21 +10,28 @@
     >
         Order complete!
     </div>
+    <OrderComplete 
+        :isPaid="isPaid"
+    />
 
 </template>
 
 <script lang="ts">
+import OrderComplete from '../components/orderCompleteComp.vue'
 import { loadScript } from '@paypal/paypal-js'
-import { onMounted, ref, defineProps, onUpdated } from 'vue';
+import { ref } from 'vue';
 
 export default {
+    components: {
+        OrderComplete,
+    },
     props: {
         userCarts: Object,
         products: Object,
         totalPrice: Number,
     },
-    setup(props) {
-        const paid = ref(false)
+    setup(props, { emit }) {
+        const isPaid = ref(false)
 
         async function loadScriptPaypal() {
             let paypal
@@ -66,13 +73,15 @@ export default {
         function onApprove(data: object, actions: object) {
             console.log("order approved...")
             return actions.order.capture().then(() => {
-                paid.value = true
+                isPaid.value = true
+
+                emit('isPaid', isPaid.value)
                 console.log("order completed !")
             })
         }
 
         return {
-            paid,
+            isPaid,
         }
     },
 }
