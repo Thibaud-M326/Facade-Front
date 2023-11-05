@@ -1,6 +1,6 @@
 <template>
     <p>
-        {{ isPaid || 'isPaidIsFalse' }}
+        {{ isPaid || 'isPaid is false' }}
     </p>
 </template>
 
@@ -13,11 +13,12 @@ export default {
     props: {
         isPaid: Boolean,
     },
-    setup(props) {
+    setup(props, { emit }) {
 
         const user = ref({
             id: ''
         }) 
+        const isEmptyCart = ref(false)
         const { mutate: deleteUserCartsMutation } = useMutation(gql`
             mutation deleteUserCarts ($input: deleteUserCartsInput!) {
                 deleteUserCarts (input: $input) {
@@ -41,6 +42,10 @@ export default {
                         },
                     })
                 }
+
+                isEmptyCart.value = true
+                
+                emit('isEmptyCart', isEmptyCart.value)
             }
         }
 

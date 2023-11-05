@@ -12,13 +12,14 @@
     </div>
     <OrderComplete 
         :isPaid="isPaid"
+        @isEmptyCart="(msg) => isEmptyCart = msg" 
     />
-
 </template>
 
 <script lang="ts">
 import OrderComplete from '../components/orderCompleteComp.vue'
 import { loadScript } from '@paypal/paypal-js'
+import { watch } from 'vue';
 import { ref } from 'vue';
 
 export default {
@@ -32,6 +33,7 @@ export default {
     },
     setup(props, { emit }) {
         const isPaid = ref(false)
+        const isEmptyCart = ref(false)
 
         async function loadScriptPaypal() {
             let paypal
@@ -75,13 +77,17 @@ export default {
             return actions.order.capture().then(() => {
                 isPaid.value = true
 
-                emit('isPaid', isPaid.value)
                 console.log("order completed !")
             })
         }
 
+        watch(isEmptyCart, () => {
+            emit('isEmptyCart', isEmptyCart.value)
+        })
+
         return {
             isPaid,
+            isEmptyCart,
         }
     },
 }
