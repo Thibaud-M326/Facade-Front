@@ -43,6 +43,7 @@ export default {
                 }
             }
         `)
+
         const { mutate: deleteUserCartsMutation, 
                 onDone: onDeleteUserCartsDone 
             } = useMutation(gql`
@@ -54,17 +55,15 @@ export default {
                     quantity
                 }
             }
-        `
-        )
+        `)
 
         const SEND_CONFIRMATION_MAIL = (gql`
-            query mail {
-                mail {
+            query ConfirmOrderMail ($user_id: Int!) {
+                ConfirmOrderMail (user_id: $user_id) {
                     isMailSentText
                 }
             }
-        `
-        )
+        `)
 
         watch(() => props.isPaid, deleteUserCarts)
 
@@ -92,7 +91,12 @@ export default {
 
                     onDeleteUserCartsDone(() => {
                         provideApolloClient(apolloClient)(() => {
-                            const { onResult } = useQuery(SEND_CONFIRMATION_MAIL)
+                            const { onResult } = useQuery(
+                                SEND_CONFIRMATION_MAIL,
+                                () => ({
+                                    user_id: parseInt(user.value.id)
+                                })
+                            )
 
                             onResult(queryResult => {
                                 mailResult.value = queryResult?.data?.mail?.isMailSentText
@@ -112,8 +116,8 @@ export default {
                 //+ emit emailSent, after this we can change CartView.vue 
                 // to display 'thanks an mail was sent to your inbox'
 
+                //send to parent, the cart is now empty
                 isEmptyCart.value = true
-                 
                 emit('isEmptyCart', isEmptyCart.value)
             }
         }
