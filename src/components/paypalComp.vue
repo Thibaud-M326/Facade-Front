@@ -12,6 +12,8 @@
     </div>
     <OrderComplete 
         :isPaid="isPaid"
+        :products="products"
+        :totalPrice="totalPrice"
         @isEmptyCart="(msg) => isEmptyCart = msg" 
     />
 </template>
@@ -58,7 +60,7 @@ export default {
             }
         }
         loadScriptPaypal()
-        
+ 
         function createOrder(data: object, actions: object) {
             console.log("creating order...")
             return actions.order.create({
