@@ -1,18 +1,11 @@
 <template>
-    <p>
-        <!-- {{ isPaid || 'isPaid is false' }} -->
-        <!-- {{ products }} -->
-        <!-- {{ totalPrice }} -->
-        <!-- {{ order_items }} -->
-        <!-- {{ mail }} -->
-    </p>
 </template>
 
 <script lang="ts">
-import { ref, watch, computed } from 'vue';
-import { useMutation, useQuery, useLazyQuery } from '@vue/apollo-composable'
-import gql from 'graphql-tag'
+import { ref, watch } from 'vue';
 import { provideApolloClient } from "@vue/apollo-composable";
+import { useMutation, useQuery } from '@vue/apollo-composable'
+import gql from 'graphql-tag'
 
 export default {
     props: {
@@ -31,6 +24,9 @@ export default {
             id: ''
         }) 
         const isEmptyCart = ref(false)
+
+        // mutation de creation de commande, enregistre les items
+        // dans la table order
         const { mutate: createOrderMutation, 
                 onDone: onCreateOrderDone 
             } = useMutation(gql`
@@ -44,6 +40,7 @@ export default {
             }
         `)
 
+        // supprime les items du panier de l'utilisateur
         const { mutate: deleteUserCartsMutation, 
                 onDone: onDeleteUserCartsDone 
             } = useMutation(gql`
@@ -57,6 +54,8 @@ export default {
             }
         `)
 
+        // Requette resolue dans l'API qui effectue l'envoi d'un
+        // mail recapitulatif de la commande
         const SEND_CONFIRMATION_MAIL = (gql`
             query ConfirmOrderMail ($user_id: Int!) {
                 ConfirmOrderMail (user_id: $user_id) {
@@ -65,15 +64,18 @@ export default {
             }
         `)
 
+        // lorsque isPaid passe a true on effectue la 
+        // function deleteUserCarts ci dessous
         watch(() => props.isPaid, deleteUserCarts)
 
         const mailResult = ref('')
 
         async function deleteUserCarts (apolloClient: any) {
-            
             if(props.isPaid === true) {
+                // on recupere l'user du local storage
                 if (user.value = JSON.parse(localStorage.getItem("user")!)) {
 
+                    // on effectue la requette de creation de commande
                     createOrderMutation({
                         input: {
                             user_id: parseInt(user.value.id),
@@ -81,6 +83,8 @@ export default {
                         }
                     })
 
+                    // apres son execution on execute la requette 
+                    // de suppression du panier
                     onCreateOrderDone(() => {
                         deleteUserCartsMutation({
                             input: {
@@ -89,6 +93,8 @@ export default {
                         })
                     })
 
+                    // apres son execution on execute la requette
+                    // d'envoi de mail resolue dans le back-end
                     onDeleteUserCartsDone(() => {
                         provideApolloClient(apolloClient)(() => {
                             const { onResult } = useQuery(
@@ -110,13 +116,8 @@ export default {
                     console.log(mailResult.value)
                 })
 
-                //+ ondone, isEmptyCartValue = true, emit is Emty Cart
-                //+ createOrder for current user in bdd
-                //+ send ConfirmOrder Mail
-                //+ emit emailSent, after this we can change CartView.vue 
-                // to display 'thanks an mail was sent to your inbox'
-
-                //send to parent, the cart is now empty
+                // On renvoi au composant parent que le panier
+                // est vide pour mettre a jour la vue du panier
                 isEmptyCart.value = true
                 emit('isEmptyCart', isEmptyCart.value)
             }

@@ -6,10 +6,6 @@
                     Cart
                 </h1>
             </div>
-            <p>
-                {{ products }}
-                {{ totalPrice }}
-            </p>
             <div v-if="isEmptyCart === false">
                 <div v-if="products[0].price !== ('')">
                     <div v-for="product in products" id="productDivs">

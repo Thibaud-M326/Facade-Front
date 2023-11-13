@@ -45,6 +45,7 @@ const apolloClient = new ApolloClient({
     cache: cache,
 })
 
+// create App
 const app = createApp({
   setup () {
     provide(DefaultApolloClient, apolloClient)
