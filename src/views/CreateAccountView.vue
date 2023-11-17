@@ -1,12 +1,4 @@
 <template>
-    <!-- <p>
-        Connect view
-    </p>
-    <p>
-        {{ me }}
-        {{ error?.message }}
-    </p> -->
-
     <div id="containerDiv">
         <div id="profileDiv">
             <v-sheet width="300" class="mx-auto">
@@ -30,57 +22,56 @@
 import gql from 'graphql-tag'
 import { useMutation, useQuery, } from '@vue/apollo-composable'
 import { ref } from 'vue'
+import router from '@/router'
 
 export default {
     data() {
         return {
+            email: '',
+            emailRules: [
+                value => {
+                    if (value) return true
 
-        email: '',
-        emailRules: [
-            value => {
-                if (value) return true
+                    return 'Email is required'
+                },
+                value => {
+                    if (/.+@.+\..+/.test(value)) return true
 
-                return 'Email is required'
-            },
-            value => {
-                if (/.+@.+\..+/.test(value)) return true
+                    return 'Email must be valid'
+                },
+            ],
+            password: '',
+            passwordRules: [
+                value => {
+                    if (value?.length >= 5) return true
 
-                return 'Email must be valid'
-            },
-        ],
-        password: '',
-        passwordRules: [
-            value => {
-                if (value?.length >= 5) return true
+                    return 'Password must be at least 5 characters'
+                }
+            ],
+            firstName: '',
+            firstNameRules: [
+                value => {
+                    if (value) return true
 
-                return 'Password must be at least 5 characters'
-            }
-        ],
-        firstName: '',
-        firstNameRules: [
-            value => {
-                if (value) return true
+                    return 'First name is required'
+                }
+            ],
+            lastName: '',
+            lastNameRules: [
+                value => {
+                    if (value) return true
 
-                return 'First name is required'
-            }
-        ],
-        lastName: '',
-        lastNameRules: [
-            value => {
-                if (value) return true
+                    return 'Last name is required'
+                }
+            ],
+            phoneNumber: '',
+            phoneRules: [
+                value => {
+                    if (value?.length > 9 && /[0-9-]+/.test(value)) return true
 
-                return 'Last name is required'
-            }
-        ],
-        phoneNumber: '',
-        phoneRules: [
-            value => {
-                if (value?.length > 9 && /[0-9-]+/.test(value)) return true
-
-                return 'Phone number needs to be at least 9 digits.'
-            }
-        ],
-    
+                    return 'Phone number needs to be at least 9 digits.'
+                }
+            ],
         }
     },
     setup() {
@@ -121,6 +112,7 @@ export default {
         onDone(result => {
             // Affiche les données dans la console
             console.log(result.data)
+            router.push({ path: "/new" })
         })
 
         return {

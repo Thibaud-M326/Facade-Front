@@ -1,23 +1,40 @@
 <template>
-
     <button
     v-if="apolloToken"
     >
     <RouterLink to="/userAccount">Account</RouterLink>
     </button>
 
+
     <v-btn 
     v-else
     color="black" variant="text" :ripple="false">
         Connect
         <v-menu activator="parent">
-            <v-sheet width="300" class="mx-auto" @click.stop>
+            <v-sheet width="500" class="mx-auto" @click.stop>
                 <v-form @submit.prevent="loginMutation()">
-                    <v-text-field v-model="email" :rules="emailRules" label="Email"></v-text-field>
-                    <v-text-field v-model="password" :rules="passwordRules" label="Password"></v-text-field>
+                    <v-text-field 
+                        class="textField"
+                        v-model="email" 
+                        :rules="emailRules"
+                        hint="required"
+                        label="Email">
+                    </v-text-field>
+                    <v-text-field 
+                        class="textField"
+                        v-model="password"
+                        :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                        :rules="passwordRules"
+                        :type="showPassword ? 'text' : 'password'"
+                        hint="at least 5 characters"
+                        label="Password"
+                        counter
+                        @click:append="showPassword = !showPassword"
+                        >
+                    </v-text-field>
                     <v-container>
                         <p>
-                            Doesn't have an account yet?
+                            Doesn't have an account yet ?
                         </p>
                         <p>
                             <RouterLink to="/createAccount">Connect</RouterLink>
@@ -43,6 +60,7 @@ import router from '@/router'
 export default {
     data: () => ({
         email: '',
+        showPassword: false,
         emailRules: [
             value => {
                 if (value) return true
@@ -119,8 +137,11 @@ export default {
 a {
 	font-size: 1rem;
 	padding-right: 20px;
-	text-decoration: none;
 	color: black;
+}
+
+.textField {
+    margin: 10px;
 }
 
 </style>
