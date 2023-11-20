@@ -1,10 +1,4 @@
 <template>
-    <!-- <p>
-        {{ product.description }}
-    </p> -->
-    <!-- <p>
-        {{ product }}
-    </p> -->
     <div id="containerDiv">
         <div id="imgDiv">
             <img 
@@ -121,8 +115,8 @@ export default {
         const product = computed(() => result?.value?.product ?? [])
 
         const { result: cartsResult, refetch: cartsRefetch } = useQuery(gql`
-            query cartsQuery {
-                carts(first: 10, user_id: 1) {
+            query cartsQuery ($user_id: Int!) {
+                carts(first: 10, user_id: $user_id) {
                     data {
                         id
                         user_id
@@ -131,7 +125,9 @@ export default {
                     }
                 }
             }
-        `)
+        `, () => ({
+            user_id: parseInt(user.value.id)
+        }))
 
         const userCarts = computed(() => cartsResult?.value?.carts ?? [])
 
@@ -141,7 +137,7 @@ export default {
 
         function addToCart() {
             const productID = product.value.id;
-            const cartWithProduct = userCarts.value.data.find((cart) => cart.product_id == productID);
+            const cartWithProduct = userCarts.value.data.find((cart : any) => cart.product_id == productID);
 
             if (cartWithProduct) {
                 console.log("Le produit existe dans le panier. Une quantitée ajouté");
@@ -198,7 +194,7 @@ export default {
         )
 
         function setExistingProduct() {
-            existingProduct.value = userCarts.value.data.find((cart) => cart.product_id == product.value.id);
+            existingProduct.value = userCarts.value.data.find((cart : any) => cart.product_id == product.value.id);
         }
 
         return {

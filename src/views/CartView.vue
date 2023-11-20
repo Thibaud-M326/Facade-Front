@@ -6,8 +6,8 @@
                     Cart
                 </h1>
             </div>
-            <div v-if="isPaid === false">
-                <div v-if="products[0]">
+            <div v-if="isEmptyCart === false">
+                <div v-if="products[0].price !== ('')">
                     <div v-for="product in products" id="productDivs">
                         <div id="productPicture">
                             <img id="productImageImg" :src="getImagePath(product.gender, product.type, product.name)"
@@ -60,10 +60,10 @@
                             :userCarts="userCarts" 
                             :products="products" 
                             :totalPrice="totalPrice"
-                            @isPaid="(msg) => isPaid = msg" 
+                            @isEmptyCart="(msg) => isEmptyCart = msg" 
                         />
                         <p>
-                            {{ isPaid }}
+                            {{ isEmptyCart || 'isEmptyCart false'}}
                         </p>
                     </div>
                 </div>
@@ -120,7 +120,7 @@ export default {
         const productsToBuy = ref(0)
 
         //value changed with paypalComp emit
-        const isPaid = ref(false)
+        const isEmptyCart = ref(false)
 
         //this request is launched every time the page is viewed
         //due to fetchPolicy.
@@ -277,7 +277,7 @@ export default {
         )
 
         return {
-            isPaid,
+            isEmptyCart,
             products,
             quantityButton,
             userCarts,
@@ -414,7 +414,7 @@ export default {
     align-items: center;
     width: 100%;
     height: 80%;
-    color: rgb(4, 153, 84);
+    color: rgb(0, 0, 0);
     font-size: large;
     font-weight: bold;
 }

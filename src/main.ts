@@ -11,10 +11,19 @@ import { setContext } from '@apollo/client/link/context'
 // Vuetify
 import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
+import { aliases, mdi } from 'vuetify/iconsets/mdi'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
+import '@mdi/font/css/materialdesignicons.css'
 
 const vuetify = createVuetify({
+    icons: {
+      defaultSet: 'mdi',
+      aliases,
+      sets: {
+        mdi,
+      },
+    },
     components,
     directives,
 })
@@ -45,6 +54,7 @@ const apolloClient = new ApolloClient({
     cache: cache,
 })
 
+// create App
 const app = createApp({
   setup () {
     provide(DefaultApolloClient, apolloClient)
